@@ -24,6 +24,8 @@
  */
 
 static const struct xvip_video_format xvip_video_formats[] = {
+	{ XVIP_VF_RBG, 5, NULL, MEDIA_BUS_FMT_RGB565_2X8_BE,
+	  2, 16, V4L2_PIX_FMT_RGB565, 1, 1, 1, 1},
 	{ XVIP_VF_YUV_420, 8, NULL, MEDIA_BUS_FMT_VYYUYY8_1X24,
 	  1, 12, V4L2_PIX_FMT_NV12, 2, 1, 1, 2 },
 	{ XVIP_VF_YUV_420, 8, NULL, MEDIA_BUS_FMT_VYYUYY8_1X24,
