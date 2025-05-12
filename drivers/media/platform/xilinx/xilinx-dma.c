@@ -1096,6 +1096,38 @@ xvip_dma_s_selection(struct file *file, void *fh, struct v4l2_selection *sel)
 	return 0;
 }
 
+static int phys_addr_dqbuf(struct file *file, void *priv, struct v4l2_buffer *p)
+{
+	int ret;
+	struct video_device *vdev = video_devdata(file);
+	struct xvip_dma *dma = vb2_get_drv_priv(vdev->queue);
+	struct vb2_buffer *vb;
+
+	ret = vb2_ioctl_dqbuf(file, priv, p);
+		if (ret)
+			return ret;
+	
+	vb = vb2_get_buffer(vdev->queue, p->index);
+	dma->last_phys_addr = (u32)vb2_dma_contig_plane_dma_addr(vb, 0);
+
+	return ret;
+}
+
+static long phys_addr_vidioc_default(struct file *file, void *fh, bool valid_prio,
+			      unsigned int cmd, void *arg)
+{
+	struct video_device *vdev = video_devdata(file);
+	struct xvip_dma *dma = vb2_get_drv_priv(vdev->queue);
+
+	switch (cmd) {
+		case VIDIOC_LAST_ADDR:
+			*((u32*)arg) = dma->last_phys_addr;
+			return 0;
+		default:
+			return -ENOTTY;
+	}
+}
+
 static const struct v4l2_ioctl_ops xvip_dma_ioctl_ops = {
 	.vidioc_querycap		= xvip_dma_querycap,
 	.vidioc_enum_fmt_vid_cap	= xvip_dma_enum_format,
@@ -1117,7 +1149,7 @@ static const struct v4l2_ioctl_ops xvip_dma_ioctl_ops = {
 	.vidioc_reqbufs			= vb2_ioctl_reqbufs,
 	.vidioc_querybuf		= vb2_ioctl_querybuf,
 	.vidioc_qbuf			= vb2_ioctl_qbuf,
-	.vidioc_dqbuf			= vb2_ioctl_dqbuf,
+	.vidioc_dqbuf			= phys_addr_dqbuf,
 	.vidioc_create_bufs		= vb2_ioctl_create_bufs,
 	.vidioc_expbuf			= vb2_ioctl_expbuf,
 	.vidioc_streamon		= vb2_ioctl_streamon,
@@ -1125,6 +1157,7 @@ static const struct v4l2_ioctl_ops xvip_dma_ioctl_ops = {
 	.vidioc_enum_input	= &xvip_dma_enum_input,
 	.vidioc_g_input		= &xvip_dma_get_input,
 	.vidioc_s_input		= &xvip_dma_set_input,
+	.vidioc_default		= phys_addr_vidioc_default,
 };
 
 /* -----------------------------------------------------------------------------

@@ -22,6 +22,8 @@
 #include <media/v4l2-dev.h>
 #include <media/videobuf2-v4l2.h>
 
+#define VIDIOC_LAST_ADDR _IOR('V', BASE_VIDIOC_PRIVATE + 0, __u32)
+
 struct dma_chan;
 struct xvip_composite_device;
 struct xvip_video_format;
@@ -117,6 +119,8 @@ struct xvip_dma {
 
 	u32 prev_fid;
 	u32 low_latency_cap;
+
+	u32 last_phys_addr;
 };
 
 #define to_xvip_dma(vdev)	container_of(vdev, struct xvip_dma, video)
